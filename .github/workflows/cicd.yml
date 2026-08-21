@@ -73,9 +73,11 @@ jobs:
           python - <<'PYEOF'
           import boto3, botocore
           print("boto3", boto3.__version__, "botocore", botocore.__version__)
+          sts = boto3.client("sts", region_name="ap-southeast-2")
+          print("caller identity:", sts.get_caller_identity())
           s3 = boto3.client("s3", region_name="ap-southeast-2")
-          print("head_bucket:", s3.head_bucket(Bucket="hellobaoworld"))
           print("list:", s3.list_objects_v2(Bucket="hellobaoworld", Prefix="dvc/", MaxKeys=5))
+          print("head_bucket:", s3.head_bucket(Bucket="hellobaoworld"))
           print("head_object:", s3.head_object(Bucket="hellobaoworld", Key="dvc/files/md5/60/97c9bf1219a011f64a7a594a7b617d"))
           PYEOF
 
