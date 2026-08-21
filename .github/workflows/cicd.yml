@@ -63,7 +63,7 @@ jobs:
           echo "AWS_DEFAULT_REGION=ap-southeast-2" >> $GITHUB_ENV
 
       - name: Pull data with DVC
-        run: dvc pull data/train_batch1.csv.dvc data/holdout.csv.dvc
+        run: dvc pull -v data/train_batch1.csv.dvc data/holdout.csv.dvc
 
       - name: Train model
         run: python src/train.py
