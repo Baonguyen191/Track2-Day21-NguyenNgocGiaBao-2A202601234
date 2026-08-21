@@ -67,6 +67,18 @@ jobs:
           echo "AWS_REQUEST_CHECKSUM_CALCULATION=when_required" >> $GITHUB_ENV
           echo "AWS_RESPONSE_CHECKSUM_VALIDATION=when_required" >> $GITHUB_ENV
 
+      - name: DEBUG plain boto3 probe
+        run: |
+          pip show boto3 botocore aiobotocore s3fs dvc dvc-objects | grep -E "^Name|^Version"
+          python - <<'PYEOF'
+          import boto3, botocore
+          print("boto3", boto3.__version__, "botocore", botocore.__version__)
+          s3 = boto3.client("s3", region_name="ap-southeast-2")
+          print("head_bucket:", s3.head_bucket(Bucket="hellobaoworld"))
+          print("list:", s3.list_objects_v2(Bucket="hellobaoworld", Prefix="dvc/", MaxKeys=5))
+          print("head_object:", s3.head_object(Bucket="hellobaoworld", Key="dvc/files/md5/60/97c9bf1219a011f64a7a594a7b617d"))
+          PYEOF
+
       - name: Pull data with DVC
         run: dvc pull data/train_batch1.csv.dvc data/holdout.csv.dvc
 
