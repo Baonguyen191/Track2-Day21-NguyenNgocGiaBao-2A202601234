@@ -61,9 +61,14 @@ jobs:
           echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
           echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
           echo "AWS_DEFAULT_REGION=ap-southeast-2" >> $GITHUB_ENV
+          # Newer botocore (>=1.36) defaults to always sending/validating S3 checksums,
+          # which aiobotocore/s3fs (used by dvc[s3]) does not yet handle correctly and
+          # causes a bare "400 Bad Request" on HeadObject. Fall back to legacy behavior.
+          echo "AWS_REQUEST_CHECKSUM_CALCULATION=when_required" >> $GITHUB_ENV
+          echo "AWS_RESPONSE_CHECKSUM_VALIDATION=when_required" >> $GITHUB_ENV
 
       - name: Pull data with DVC
-        run: dvc pull -v data/train_batch1.csv.dvc data/holdout.csv.dvc
+        run: dvc pull data/train_batch1.csv.dvc data/holdout.csv.dvc
 
       - name: Train model
         run: python src/train.py
