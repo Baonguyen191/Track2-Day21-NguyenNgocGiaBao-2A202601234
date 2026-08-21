@@ -61,25 +61,6 @@ jobs:
           echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
           echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
           echo "AWS_DEFAULT_REGION=ap-southeast-2" >> $GITHUB_ENV
-          # Newer botocore (>=1.36) defaults to always sending/validating S3 checksums,
-          # which aiobotocore/s3fs (used by dvc[s3]) does not yet handle correctly and
-          # causes a bare "400 Bad Request" on HeadObject. Fall back to legacy behavior.
-          echo "AWS_REQUEST_CHECKSUM_CALCULATION=when_required" >> $GITHUB_ENV
-          echo "AWS_RESPONSE_CHECKSUM_VALIDATION=when_required" >> $GITHUB_ENV
-
-      - name: DEBUG plain boto3 probe
-        run: |
-          pip show boto3 botocore aiobotocore s3fs dvc dvc-objects | grep -E "^Name|^Version"
-          python - <<'PYEOF'
-          import boto3, botocore
-          print("boto3", boto3.__version__, "botocore", botocore.__version__)
-          sts = boto3.client("sts", region_name="ap-southeast-2")
-          print("caller identity:", sts.get_caller_identity())
-          s3 = boto3.client("s3", region_name="ap-southeast-2")
-          print("list:", s3.list_objects_v2(Bucket="hellobaoworld", Prefix="dvc/", MaxKeys=5))
-          print("head_bucket:", s3.head_bucket(Bucket="hellobaoworld"))
-          print("head_object:", s3.head_object(Bucket="hellobaoworld", Key="dvc/files/md5/60/97c9bf1219a011f64a7a594a7b617d"))
-          PYEOF
 
       - name: Pull data with DVC
         run: dvc pull data/train_batch1.csv.dvc data/holdout.csv.dvc
